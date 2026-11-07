@@ -142,7 +142,7 @@ int main(int argc, char *argv[]) {
           printf("\nvolume\n");
           volume(argv);
       } else {
-          fprintf(stderr, "%s is not a valid argument", argv[1]);
+          fprintf(stderr, "%s is not a valid argument.", argv[1]);
           return 0;
       }
   }

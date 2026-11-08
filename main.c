@@ -129,17 +129,60 @@ int volume(char *argv[]) {
     return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
+int wifi(int argc, char *argv[]) {
+
+    pid_t pid;
+    char *args[] = {"nmcli", "radio", "wifi", NULL, NULL, NULL, NULL, NULL};
+    if (argc < 3) {
+        args[1] = "device";
+        args[2] = "status";
+    } else if (strcmp(argv[2],"on")==0) {
+        args[3] = "on";
+        printf("british wifi on");
+    } else if (strcmp(argv[2],"off")==0) {
+        args[3]="off";
+    } else if (strcmp(argv[2], "list")==0) {
+        args[1]="device";
+    } else if (strcmp(argv[2], "connect")==0) {
+        if (argc < 5) {
+            fprintf(stderr, "Not enough arguments\n");
+            return 1;
+        }
+        args[1] = "device";
+        args[2] = "wifi";
+        args[3] = "connect";
+        args[4] = argv[3];
+        args[5] = "password";
+        args[6] = argv[4];
+    }
+    else {
+        args[1] = "device";
+        args[2] = "status";
+    }
+
+    int err = posix_spawnp(&pid, "nmcli", NULL, NULL, args, environ);
+    if (err != 0) {
+        fprintf(stderr, "posix_spawnp failed: %s\n", strerror(err));
+      return 3;
+    }
+    int status;
+    waitpid(pid, &status, 0);
+
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+}
+
 int main(int argc, char *argv[]) {
 
   if (argc >=2) {
       if (strcmp(argv[1], "power") == 0) {
           powerprofiles( argv);
       } else if (strcmp(argv[1], "bluetooth") ==0) {
-          printf("\nbluetooth\n");
+          printf("bluetooth\n");
       } else if (strcmp(argv[1], "wifi") == 0) {
-          printf("\nwifi\n");
+          printf("Wifi\n");
+          wifi(argc, argv);
       } else if (strcmp(argv[1], "volume") == 0) {
-          printf("\nvolume\n");
+          printf("Volume\n");
           volume(argv);
       } else {
           fprintf(stderr, "%s is not a valid argument.", argv[1]);

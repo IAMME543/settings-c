@@ -171,12 +171,44 @@ int wifi(int argc, char *argv[]) {
     return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
 }
 
+int bluetooth(int argc, char*argv[]) {
+
+    pid_t pid;
+    char *args[] = {"bluetoothctl", NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+    if (argc < 3) {
+        args[1] = "devices";
+    } else if (strcmp(argv[2],"on")==0) {
+        args[1] = "power";
+        args[2]="on";
+    } else if (strcmp(argv[2], "off")) {
+            args[1]="power";
+            args[2]="on";
+    } else if (strcmp(argv[2], "list")) {
+        args[1] = "devices";
+    } else if (strcmp(argv[2], "list-paired")) {
+        args[1] = "paired-devices";
+    } else {
+        args[1] = "devices";
+    }
+
+    int err = posix_spawnp(&pid, "bluetoothctl", NULL, NULL, args, environ);
+    if (err != 0) {
+        fprintf(stderr, "posix_spawnp failed: %s\n", strerror(err));
+      return 3;
+    }
+    int status;
+    waitpid(pid, &status, 0);
+
+    return WIFEXITED(status) ? WEXITSTATUS(status) : 1;
+}
+
 int main(int argc, char *argv[]) {
 
   if (argc >=2) {
       if (strcmp(argv[1], "power") == 0) {
           powerprofiles( argv);
       } else if (strcmp(argv[1], "bluetooth") ==0) {
+          bluetooth(argc, argv);
           printf("bluetooth\n");
       } else if (strcmp(argv[1], "wifi") == 0) {
           printf("Wifi\n");
